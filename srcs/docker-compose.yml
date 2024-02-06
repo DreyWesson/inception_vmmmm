@@ -1,0 +1,130 @@
+version: '3'
+
+services:
+  nginx:
+    container_name: nginx
+    build:
+      context: .
+      dockerfile: requirements/nginx/Dockerfile
+    depends_on:
+      - wordpress
+    ports:
+      - "443:443"
+    expose:
+      - "9000"
+    volumes:
+      - ./requirements/nginx/conf/:/etc/nginx/http.d/
+      - ./requirements/nginx/tools:/etc/nginx/ssl/
+      - wp-volume:/var/www/
+    networks:
+      - inception
+    restart: always
+
+  mariadb:
+    container_name: mariadb
+    build:
+      context: .
+      dockerfile: requirements/mariadb/Dockerfile
+      args:
+        DB_NAME: ${DB_NAME}
+        DB_USER: ${DB_USER}
+        DB_PASS: ${DB_PASS}
+        DB_ROOT: ${DB_ROOT}
+    expose:
+      - "3306"
+      - "9000"
+    volumes:
+      - db-volume:/var/lib/mysql
+    networks:
+      - inception
+    restart: always
+
+  wordpress:
+    container_name: wordpress
+    build:
+      context: .
+      dockerfile: requirements/wordpress/Dockerfile
+      args:
+        DB_NAME: ${DB_NAME}
+        DB_USER: ${DB_USER}
+        DB_PASS: ${DB_PASS}
+    depends_on:
+      - mariadb
+    restart: always
+    expose:
+      - "9000"
+    volumes:
+      - wp-volume:/var/www/
+    networks:
+      - inception
+
+  redis:
+    container_name: redis
+    build:
+      context: .
+      dockerfile: requirements/bonus/redis/Dockerfile
+      args:
+        WP_REDIS_PASSWORD: ${WP_REDIS_PASSWORD}
+    expose:
+      - "6379"
+    networks:
+      - inception
+    restart: always
+
+  vsftpd:
+    container_name: vsftpd
+    build:
+      context: .
+      dockerfile: requirements/bonus/vsftpd/Dockerfile
+      args:
+        FTP_USR: ${FTP_USR}
+        FTP_PWD: ${FTP_PWD}
+    ports:
+      - "21:21"
+      - "20:20"
+      - "30001:30001"
+    volumes:
+      - wp-volume:/var/www/
+    networks:
+     - inception
+    restart: always
+
+  adminer:
+    container_name: adminer
+    build:
+      context: .
+      dockerfile: requirements/bonus/adminer/Dockerfile
+    depends_on:
+      - mariadb
+    ports:
+      - "8080:8080"
+    networks:
+     - inception
+    restart: always
+
+  website:
+    container_name: website
+    build:
+      context: .
+      dockerfile: requirements/bonus/website/Dockerfile
+    ports:
+      - "80:80"
+    restart: always
+
+
+volumes:
+  wp-volume:
+    driver_opts:
+      o: bind
+      type: none
+      device: /home/${USER}/data/wordpress
+
+  db-volume:
+    driver_opts:
+      o: bind
+      type: none
+      device: /home/${USER}/data/mariadb
+
+networks:
+    inception:
+        driver: bridge

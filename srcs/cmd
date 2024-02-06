@@ -1,0 +1,52 @@
+https://ioflood.com/blog/docker-compose-ports-vs-expose-explained/#:~:text='Ports'%20propels%20the%20reach%20of,tailored%20for%20inter%2Dcontainer%20communication.
+
+https://kinsta.com/blog/mariadb-docker/
+
+#SSH
+connect to the ports via several means
+ssh -p 42 doduwole@localhost
+ssh -p 42 doduwole@127.0.0.1
+ssh -p 42 doduwole@doduwole.42.fr
+
+# Docker
+docker network list => shows all available networks
+
+
+docker network instpect ${network_name} => shows you which containers and on the same network
+
+docker inspect {containername} => investigate the containers like check which ports are exposed and to what are they exposed, check there ips  etc
+
+
+### check pid
+docker exec -it <container_name_or_id> ps aux
+
+### check passwords
+docker exec --env-file ./srcs/.env wordpress env  => shows all provided env variable
+docker-compose run ${container_name} env => shows all env variable loaded to a particular container/service
+
+docker inspect ${container_name} | grep ${password_key}
+
+
+docker exec -it mariadb mysql -u root;
+docker exec -it mariadb mariadb -u root;
+
+
+# MariaDB
+show databases;
+use <database_name>
+show tables;
+explain <one_of_table_listed>
+select * from <one_of_table_listed> e.g SELECT * FROM wp_users;
+SELECT user,host,password FROM mysql.user; : see all users
+
+
+#Wordpress
+docker exec -it wordpress sh
+docker exec -it wordpress ps aux | grep 'php'
+docker exec -it wordpress php82 -v
+docker exec -it wordpress php82 -m
+
+
+# VSFTPD
+ftp -p localhost 21 => using ftp client for data transfer
+filezilla => for GUI
